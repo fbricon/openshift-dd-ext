@@ -3,21 +3,20 @@ import EditIcon from '@mui/icons-material/Edit';
 import ExpandLessRounded from '@mui/icons-material/ExpandLessRounded';
 import ExpandMoreRounded from '@mui/icons-material/ExpandMoreRounded';
 import { Box, Button, Card, CardContent, CardHeader, IconButton, Tooltip } from "@mui/material";
-import { Suspense, useEffect, useState } from 'react';
-import { useRecoilState } from 'recoil';
+import { Suspense, useState } from 'react';
+import { useRecoilRefresher_UNSTABLE, useRecoilValue } from 'recoil';
 import ConsoleButton from './components/consoleButton';
 import { ChangeContext } from './dialogs/changeContext';
 import { ChangeProject } from './dialogs/changeProject';
 import { LoginDialog } from './dialogs/login';
 import { UnknownKubeContext } from './models/KubeContext';
 import { currentContextState } from './state/currentContextState';
-import { loadKubeContext } from './utils/OcUtils';
 import { openInBrowser } from './utils/UIUtils';
 
-export default function CurrentContext() {
-  const [loading, setLoading] = useState(true);
-  const [currentContext, setCurrentContext] = useRecoilState(currentContextState);
+export function CurrentContext() {
+  const currentContext = useRecoilValue(currentContextState);
   const [expanded, setExpanded] = useState(false);
+  const refreshContext = useRecoilRefresher_UNSTABLE(currentContextState);
   
   const handleLogin = () => {
     showLoginDialog();
@@ -50,21 +49,6 @@ export default function CurrentContext() {
   const installChangeProjectDialog = (showDialogHandler: () => void) => {
     showChangeProjectDialog = showDialogHandler;
   }
-
-  async function loadContext(): Promise<void> {
-    const context = await loadKubeContext();
-    setCurrentContext(context);
-  }
-
-  const onLogin = () => {
-    loadContext();
-  }
-
-  useEffect(() => {
-    if (loading) {
-      loadContext();
-    }
-  }, []);
 
   function openClusterPage() {
     if (currentContext.clusterUrl) {
@@ -105,7 +89,9 @@ export default function CurrentContext() {
               </Tooltip>
               <Tooltip title={expanded ? "Collapse context details" : "Expand context details"} placement='bottom-end' >
                 <IconButton
-                  onClick={toggleExpand}>
+                  onClick={toggleExpand}
+                  disabled={currentContext === UnknownKubeContext}
+                  >
                   {(expanded) && (
                     <ExpandLessRounded />
                   )}
@@ -133,9 +119,38 @@ export default function CurrentContext() {
           </Box>
         </CardContent>
       </Card >
-      <LoginDialog install={installDialog} onLogin={onLogin} />
-      <ChangeContext install={installChangeContextDialog} onContextChange={loadContext} showLoginDialog={handleLogin} />
-      <ChangeProject install={installChangeProjectDialog} onProjectChange={loadContext} />
+      <LoginDialog install={installDialog} onLogin={refreshContext} />
+      <ChangeContext install={installChangeContextDialog} onContextChange={refreshContext} showLoginDialog={handleLogin} />
+      <ChangeProject install={installChangeProjectDialog} onProjectChange={refreshContext} />
+    </>
+  );
+}
+
+// Stub for the current context card, to minimize look'n feel disruption
+export function LoadingCurrentContext() {
+  return (
+    <>
+      <Card>
+        <CardHeader
+          title="Loading context..."
+          subheader="Please wait..."
+          action={
+            <>
+                <IconButton>
+                  <LoginRounded />
+                </IconButton>
+                <IconButton
+                  aria-label="action"
+                  disabled>
+                  <EditIcon />
+                </IconButton>
+                <IconButton disabled>
+                    <ExpandMoreRounded />
+                </IconButton>
+            </>
+          }
+        />
+      </Card >
     </>
   );
 }

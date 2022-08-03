@@ -2,7 +2,7 @@ import { RefreshRounded } from "@mui/icons-material";
 import { Alert, Autocomplete, Button, Link, TextField, Tooltip } from "@mui/material";
 import { Box } from "@mui/system";
 import { useEffect, useState } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilValue } from "recoil";
 import DeployButton from "./components/deployButton";
 import { IDockerImage, ISelectedImage } from "./models/IDockerImage";
 import { UnknownKubeContext } from "./models/KubeContext";
@@ -29,7 +29,7 @@ export default function ImageSelector(props?: ImageSelectorProps) {
   const [imageOptions, setImageOptions] = useState<ImageOption[]>([]);
   const [selectedImage, setSelectedImage] = useState<ISelectedImage | null>(null);
   const [selectedOption, setSelectedOption] = useState<ImageOption | null>(null);
-  const [currentContext,] = useRecoilState(currentContextState);
+  const currentContext = useRecoilValue(currentContextState);
 
   async function loadImages(): Promise<void> {
     const refreshing = !initialLoading;

@@ -46,9 +46,7 @@ export function ChangeContext(props: LoginDialogProps) {
       setKubeConfig(kubeConfig);
       setContexts(kubeConfig.contexts ? kubeConfig.contexts : [])
       setSelectedContext(kubeConfig['current-context']);
-      setTimeout(() => {
-        setLoading(false)
-      }, 1500);
+      setLoading(false)
     });
   }
 
@@ -63,7 +61,13 @@ export function ChangeContext(props: LoginDialogProps) {
 
   return (
     <div>
-      <Dialog open={open} onClose={handleChange} fullWidth={true}>
+      <Dialog open={open} onClose={handleChange} fullWidth={true} PaperProps={{
+        sx: {
+          minWidth: 500,
+          minHeight: 570,
+          maxHeight: 570
+        }
+      }}>
         <DialogTitle>Change Context</DialogTitle>
         <DialogContent>
           {(loading) && (

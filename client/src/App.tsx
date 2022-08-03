@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Logo from './components/logo';
-import CurrentContext from './ContextCard';
+import { CurrentContext, LoadingCurrentContext } from './ContextCard';
 import DeploymentOutput from './DeploymentOutput';
 import Header from './Header';
 import { useLocalState } from './hooks/useStorageState';
@@ -107,8 +107,12 @@ export function App() {
       {deployView && (
         <>
           <Header />
-          <CurrentContext />
-          <ImageSelector onDeployClick={deploy} />
+          <Suspense fallback={<LoadingCurrentContext />}>
+            <CurrentContext />
+          </Suspense>
+          <Suspense fallback="...">
+            <ImageSelector onDeployClick={deploy} />
+          </Suspense>
           <DeploymentOutput deployResponse={deployResponse} />
         </>
       )}

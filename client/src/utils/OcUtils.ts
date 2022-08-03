@@ -149,13 +149,14 @@ export async function loadKubeContext(): Promise<KubeContext> {
 
 export async function readKubeConfig(): Promise<any> {
   return new Promise((resolve, reject) => {
+    const start = Date.now();
     ddClient.extension?.host?.cli.exec(ocPath, ["config", "view", "-o", "json"]).then(result => {
       if (result.stderr) {
         console.log("stderr:" + result.stderr);
         reject(result.stderr);
       }
       const config = JSON.parse(result.stdout);
-      console.log(`kube config:\n ${JSON.stringify(config)}`);
+      console.log(`Loaded kube config in ${Date.now() - start}ms:\n ${JSON.stringify(config)}`);
       resolve(config);
     }).catch((e) => {
       handleError(reject, e);
@@ -165,13 +166,14 @@ export async function readKubeConfig(): Promise<any> {
 
 export async function loadProjectNames(): Promise<string[]> {
   return new Promise((resolve, reject) => {
+    const start = Date.now();
     ddClient.extension?.host?.cli.exec(ocPath, ["get", "projects", "-o", "json"]).then(result => {
       if (result.stderr) {
         console.log("stderr:" + result.stderr);
         reject(result.stderr);
       }
       const projects = JSON.parse(result.stdout);
-      console.log(`projects/namespaces:\n ${JSON.stringify(projects.items)}`);
+      console.log(`Loaded projects/namespaces in ${Date.now() - start}ms:\n ${JSON.stringify(projects.items)}`);
       resolve(projects.items.map((project: any) => project.metadata.name));
     }).catch((e) => {
       handleError(reject, e);

@@ -1,15 +1,17 @@
-import * as React from 'react';
+import { createDockerDesktopClient } from '@docker/extension-api-client';
+import { Box, CircularProgress, Divider, List, ListItem, ListItemButton, ListItemText, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Box, CircularProgress, Divider, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from '@mui/material';
-import { loadKubeContext, loadProjectNames, setCurrentContextProject } from '../utils/OcUtils';
-import { createDockerDesktopClient } from '@docker/extension-api-client';
-import { NewProjectDialog } from './newProject';
+import * as React from 'react';
+import { useRecoilValue } from 'recoil';
+import { currentContextState } from '../state/currentContextState';
 import { getMessage } from '../utils/ErrorUtils';
+import { loadProjectNames, setCurrentContextProject } from '../utils/OcUtils';
+import { NewProjectDialog } from './newProject';
 
 export interface ChangeProjectDialogProps {
   install: (showDialog: () => void) => void;
@@ -17,6 +19,7 @@ export interface ChangeProjectDialogProps {
 }
 
 export function ChangeProject(props: ChangeProjectDialogProps) {
+  const context = useRecoilValue(currentContextState);
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [changing, setChanging] = React.useState(false);
@@ -49,19 +52,15 @@ export function ChangeProject(props: ChangeProjectDialogProps) {
   const handleOpen = () => {
     setLoading(true);
     setOpen(true)
-    loadKubeContext().then((context) => {
-      setCurrentProject(context.project ? context.project : '');
-      setSelectedProject(context.project ? context.project : '');
-      loadProjectNames().then((projects) => {
-        setProjects(projects); 1
-        setTimeout(() => {
-          setLoading(false);
-        }, 1500);
-      }).catch((error) => {
-        console.error(error);
-        ddClient.desktopUI.toast.error(getMessage(error));
-        setOpen(false);
-      });
+    setCurrentProject(context.project ? context.project : '');
+    setSelectedProject(context.project ? context.project : '');
+    loadProjectNames().then((projects) => {
+      setProjects(projects); 
+      setLoading(false);
+    }).catch((error) => {
+      console.error(error);
+      ddClient.desktopUI.toast.error(getMessage(error));
+      setOpen(false);
     });
   }
 
@@ -86,8 +85,8 @@ export function ChangeProject(props: ChangeProjectDialogProps) {
     <div>
       <Dialog open={open} onClose={handleClose} fullWidth={true} PaperProps={{
         sx: {
-          minWidth: 500,
-          minHeight: 570
+          minHeight: 570,
+          maxHeight: 570
         }
       }}>
         <DialogTitle>Change Project</DialogTitle>

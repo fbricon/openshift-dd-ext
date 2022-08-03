@@ -1,11 +1,13 @@
-import { atom, selector } from "recoil";
+import { selector } from "recoil";
 import { UnknownKubeContext } from "../models/KubeContext";
 import { getMessage } from "../utils/ErrorUtils";
-import { getOpenShiftConsoleURL } from "../utils/OcUtils";
+import { getOpenShiftConsoleURL, loadKubeContext } from "../utils/OcUtils";
 
-export const currentContextState = atom({
+export const currentContextState = selector({
   key: 'contextState',
-  default: UnknownKubeContext,
+  get: async () => {
+    return loadKubeContext();
+  },
 });
 
 const CONSOLE_URLS = new Map<string, string>();
